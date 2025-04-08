@@ -27,9 +27,12 @@ class OrderController extends Controller
             return response()->json(['message' => 'Корзина пуста или не найдена.'], 400);
         }
 
-        $order = $this->service->createOrderFromCart($cart, $request->validated());
-
-        return response()->json(OrderResource::make($order));
+        try {
+            $order = $this->service->createOrderFromCart($cart, $request->validated());
+            return response()->json(OrderResource::make($order));
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     public function deleteOrder(): JsonResponse

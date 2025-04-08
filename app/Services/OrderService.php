@@ -19,11 +19,16 @@ class OrderService
 
     public function getTotalPrice(Cart $cart): float|int
     {
-        $total = 0;
-        foreach ($cart->products as $product) {
-            $total += $product->price * $product->pivot->quantity;
+        try {
+            $total = 0;
+            foreach ($cart->products as $product) {
+                $total += $product->price * $product->pivot->quantity;
+            }
+            return $total;
+        } catch (\Throwable $e) {
+            report($e);
+            throw new \Exception("Ошибка при расчёте стоимости заказа.");
         }
-        return $total;
     }
 
     public function createOrderFromCart(Cart $cart, array $data): Order

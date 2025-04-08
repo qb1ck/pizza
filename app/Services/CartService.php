@@ -10,13 +10,19 @@ class CartService
 {
     public function getCurrentCart()
     {
-        $userId = auth()->id();
-        $cart = Cart::query()->where('user_id', $userId)->where('open', true)->first();
+        try {
+            $userId = auth()->id();
+            $cart = Cart::query()->where('user_id', $userId)->where('open', true)->first();
 
-        if (!$cart) {
-            $cart = Cart::query()->create(['user_id' => $userId, 'open' => true]);
+            if (!$cart) {
+                $cart = Cart::query()->create(['user_id' => $userId, 'open' => true]);
+            }
+
+            return $cart;
+        } catch (\Throwable $e) {
+            report($e);
+            throw new \Exception("Ошибка при получении корзины.");
         }
-        return $cart;
     }
 
     public function addToCart(array $data): void
@@ -36,7 +42,7 @@ class CartService
                 $newQuantity = $existingProduct->pivot->quantity + $data['quantity'];
 
                 if ($limit !== null && $newQuantity > $limit) {
-                    abort(400, "Превышен лимит для категории «{$categoryName}»: максимум {$limit}.");
+                    throw new \RuntimeException("Превышен лимит для категории «{$categoryName}»: максимум {$limit}.");
                 }
 
                 $existingProduct->pivot->quantity = $newQuantity;
@@ -57,7 +63,7 @@ class CartService
                 $newQuantity = $currentCategoryQuantity + $data['quantity'];
 
                 if ($limit !== null && $newQuantity > $limit) {
-                    abort(400, "Превышен лимит для категории «{$categoryName}»: максимум {$limit}.");
+                    throw new \RuntimeException("Превышен лимит для категории «{$categoryName}»: максимум {$limit}.");
                 }
 
                 $cart->products()->attach($data['product_id'], [

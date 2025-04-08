@@ -62,7 +62,7 @@ class CartTest extends TestCase
 
         $response->assertStatus(400)
             ->assertJson([
-                'message' => 'Превышен лимит для категории «Пицца»: максимум 10.',
+                'error' => 'Превышен лимит для категории «Пицца»: максимум 10.',
             ]);
     }
 

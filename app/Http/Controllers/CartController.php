@@ -16,18 +16,26 @@ class CartController extends Controller
 
     public function getProductFromCurrentCart(): JsonResponse
     {
-        $cart = $this->service->getCurrentCart()->load('products.category');
-        $products = $cart->products;
+        try {
+            $cart = $this->service->getCurrentCart()->load('products.category');
+            $products = $cart->products;
 
-        return response()->json(CartProductResource::collection($products));
+            return response()->json(CartProductResource::collection($products));
+        } catch (\Throwable $e) {
+            report($e);
+            return response()->json(['message' => 'Не удалось получить корзину'], 500);
+        }
     }
 
     public function addProductToCart(CartProductRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $this->service->addToCart($data);
-
-        return response()->json(['message' => 'Продукт добавлен в корзину']);
+        try {
+            $data = $request->validated();
+            $this->service->addToCart($data);
+            return response()->json(['message' => 'Продукт добавлен в корзину']);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e->getMessage()], 400);
+        }
     }
 
     public function removeProductFromCart(CartProductRequest $request): JsonResponse

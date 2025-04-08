@@ -31,20 +31,34 @@ class AdminController extends Controller
 
     public function createProduct(ProductRequest $request, AdminService $service): JsonResponse
     {
-        $product = $service->createProduct($request->validated());
-        return response()->json(ProductResource::make($product), 201);
+        try {
+            $product = $service->createProduct($request->validated());
+            return response()->json(ProductResource::make($product), 201);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Не удалось создать продукт: ' . $e->getMessage()], 500);
+        }
     }
 
     public function updateProduct(UpdateProductRequest $request, Product $product, AdminService $service): JsonResponse
     {
-        $product = $service->updateProduct($product, $request->validated());
-        return response()->json(ProductResource::make($product));
+        try {
+            $product = $service->updateProduct($product, $request->validated());
+            return response()->json(ProductResource::make($product));
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Не удалось обновить продукт: ' . $e->getMessage()], 500);
+        }
+
     }
 
     public function deleteProduct(Product $product, AdminService $service): JsonResponse
     {
-        $service->deleteProduct($product);
-        return response()->json(['message' => 'Продукт успешно удалён']);
+        try {
+            $service->deleteProduct($product);
+            return response()->json(['message' => 'Продукт успешно удалён']);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'Не удалось удалить продукт' . $e->getMessage()], 500);
+        }
+
     }
 
     public function getOrders(AdminService $service): JsonResponse
